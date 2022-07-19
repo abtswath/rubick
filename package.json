@@ -1,0 +1,30 @@
+{
+  "name": "rubick",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^1.0.1",
+    "normalize.css": "^8.0.1",
+    "vue": "^3.2.25",
+    "vue-router": "^4.0.16"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^1.0.2",
+    "@types/node": "^18.0.0",
+    "@vicons/material": "^0.12.0",
+    "@vitejs/plugin-vue": "^2.3.3",
+    "cz-conventional-changelog": "3.3.0",
+    "naive-ui": "^2.30.8",
+    "sass": "^1.53.0",
+    "typescript": "^4.5.4",
+    "vfonts": "^0.0.3",
+    "vite": "^2.9.9",
+    "vue-tsc": "^0.34.7"
+  }
+}
