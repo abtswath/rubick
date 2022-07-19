@@ -2,7 +2,6 @@
     all(not(debug_assertions), target_os = "windows"),
     windows_subsystem = "windows"
 )]
-
 use tauri::{api::dialog, Manager, WindowBuilder, WindowUrl};
 
 use crate::api::{search, resource};

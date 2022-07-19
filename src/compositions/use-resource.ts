@@ -1,5 +1,7 @@
 import { ref } from 'vue';
 import useRequest from './use-request';
+import { appDir, join } from '@tauri-apps/api/path';
+import { convertFileSrc } from '@tauri-apps/api/tauri';
 
 export interface SeriesFile {
     id: number,
@@ -37,6 +39,7 @@ export interface Resource {
     name: string,
     original_name: string,
     alias_name: string,
+    pic: string,
     directors: string,
     writers: string,
     actors: string,
@@ -52,7 +55,14 @@ export interface Resource {
 export default (id: number) => {
     const resource = ref<Resource | null>(null);
     const { loading, request } = useRequest();
+
     request<Resource>('resource', { id })
+        .then(async response => {
+            const dir = await appDir();
+            const path = await join(dir, 'images', response.pic);
+            response.pic = convertFileSrc(path);
+            return response;
+        })
         .then(response => {
             resource.value = response;
         })

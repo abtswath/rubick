@@ -4,7 +4,7 @@
             <template #avatar>
                 <NAvatar size="large" round
                     :color="resource.channel ? stringToColor(resource.channel) : '#ccc'">
-                    {{ resource.channel }}
+                    {{ translateChannel(resource.channel) }}
                 </NAvatar>
             </template>
             <template #header>
@@ -22,6 +22,7 @@
 <script lang="ts" setup>
 import { NThing, NAvatar } from 'naive-ui';
 import { SearchResult } from '@/compositions/use-search-resources';
+import translateChannel from '@/libs/translate-channel';
 
 defineProps<{
     resource: SearchResult

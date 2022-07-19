@@ -29,6 +29,6 @@ const { VirtualList, handleScroll } = useVirtualList<SearchResult>({
 
 <style lang="scss" scoped>
 .result {
-    height: calc(100vh - 120px);
+    height: calc(100vh - 140px);
 }
 </style>

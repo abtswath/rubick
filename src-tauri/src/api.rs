@@ -3,7 +3,11 @@ use rusqlite::{params, Connection};
 use serde::{Deserialize, Serialize};
 use tauri::command;
 
-use crate::{database::execute, response::Response};
+use crate::{
+    database::execute,
+    douban::{get_subject, Subject},
+    response::Response,
+};
 
 #[derive(Serialize, Deserialize)]
 pub struct SearchResult {
@@ -55,6 +59,7 @@ pub struct Resource {
     pub name: String,
     pub original_name: String,
     pub alias_name: String,
+    pub pic: String,
     pub directors: String,
     pub writers: String,
     pub actors: String,
@@ -95,12 +100,13 @@ pub fn resource(id: i64) -> Response<Option<Resource>> {
         return Response::fail("resource is not exists.", None);
     }
     let result = execute(|db| {
-        let mut resource = db.query_row("select r.id, r.name, r.original_name, r.alias_name, r.directors, r.writers, r.actors, r.types, r.released_at, r.summary, r.rating, c.name as channel, a.name as area from resources as r left join channels as c on c.id=r.channel_id left join areas as a on a.id=r.area_id where r.id=?", [id], |row| {
+        let mut resource = db.query_row("select r.id, r.name, r.original_name, r.alias_name, r.pic, r.directors, r.writers, r.actors, r.types, r.released_at, r.summary, r.rating, c.name as channel, a.name as area from resources as r left join channels as c on c.id=r.channel_id left join areas as a on a.id=r.area_id where r.id=?", [id], |row| {
             Ok(Resource {
                 id: row.get("id")?,
                 name: row.get("name")?,
                 original_name: row.get("original_name")?,
                 alias_name: row.get("alias_name")?,
+                pic: row.get("pic")?,
                 directors: row.get("directors")?,
                 writers: row.get("writers")?,
                 actors: row.get("actors")?,
@@ -114,6 +120,22 @@ pub fn resource(id: i64) -> Response<Option<Resource>> {
             })
         })?;
 
+        if resource.pic.eq("") {
+            let result =
+                tauri::async_runtime::block_on(async { get_subject(resource.name.as_str()).await });
+            if let Ok(subject) = result {
+                resource.pic = subject.pic.to_string();
+                resource.directors = subject.directors.to_string();
+                resource.writers = subject.writers.to_string();
+                resource.actors = subject.actors.to_string();
+                resource.types = subject.types.to_string();
+                resource.released_at = subject.released_at.to_string();
+                resource.summary = subject.summary.to_string();
+                resource.rating = subject.rating;
+                let _ = update_resource(db, resource.id, subject);
+            }
+        }
+
         resource.seasons = seasons_for_resource(db, id)?;
         Ok(resource)
     });
@@ -121,6 +143,21 @@ pub fn resource(id: i64) -> Response<Option<Resource>> {
         Ok(resource) => Response::ok("success", Some(resource)),
         Err(_) => Response::fail("resource is not exists.", None),
     }
+}
+
+fn update_resource(db: &mut Connection, resource_id: i64, subject: Subject) -> Result<usize> {
+    let size = db.execute("update resources set pic=?1, directors=?2, writers=?3, actors=?4, types=?5, released_at=?6, summary=?7, rating=?8 where id=?9", params![
+        subject.pic,
+        subject.directors,
+        subject.writers,
+        subject.actors,
+        subject.types,
+        subject.released_at,
+        subject.summary,
+        subject.rating,
+        resource_id
+    ])?;
+    Ok(size)
 }
 
 fn seasons_for_resource(db: &mut Connection, resource_id: i64) -> Result<Vec<Season>> {

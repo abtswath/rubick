@@ -32,6 +32,7 @@ const MIGRATIONS: [&'static str; 15] = [
         alias_name text NOT NULL DEFAULT '',
         channel_id integer NOT NULL DEFAULT 0,
         area_id integer NOT NULL DEFAULT 0,
+        pic text NOT NULL DEFAULT '',
         directors text NOT NULL DEFAULT '',
         writers text NOT NULL DEFAULT '',
         actors text NOT NULL DEFAULT '',

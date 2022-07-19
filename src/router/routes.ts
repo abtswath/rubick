@@ -1,7 +1,7 @@
 import { RouteRecordRaw } from 'vue-router';
 import Layout from '@/components/layout/index.vue';
 import BasicLayout from '@/components/basic-layout/index.vue';
-import Search from '@/views/search/index.vue';
+import Search from '@/views/search/search.vue';
 import Resource from '@/views/resource/index.vue';
 import Initialize from '@/views/initialize/index.vue';
 import Setting from '@/views/setting/index.vue';

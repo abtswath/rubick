@@ -16,7 +16,7 @@ import { NLayout, NLayoutContent } from 'naive-ui';
 import Sider from './sider.vue';
 import { ref } from 'vue';
 
-const keepAlivePages = ref([]);
+const keepAlivePages = ref(['search']);
 </script>
 
 <style lang="scss" scoped>

@@ -10,6 +10,10 @@ pub fn app_dir() -> PathBuf {
     tauri::api::path::app_dir(&tauri::Config::default()).unwrap().join(IDENTIFIER)
 }
 
+pub fn image_dir() -> PathBuf {
+    app_dir().join("images")
+}
+
 pub fn setup(app: &mut App) -> Result<()> {
     let app_dir = match app.path_resolver().app_dir() {
         None => PathBuf::new(),
@@ -17,6 +21,10 @@ pub fn setup(app: &mut App) -> Result<()> {
     };
     if !app_dir.exists() {
         create_dir_all(&app_dir)?;
+    }
+    let image_dir = image_dir();
+    if !image_dir.exists() {
+        create_dir_all(image_dir)?;
     }
     Ok(())
 }
