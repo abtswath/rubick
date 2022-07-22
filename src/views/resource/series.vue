@@ -1,5 +1,5 @@
 <template>
-    <NDataTable :columns="columns" :data="data" :bordered="false">
+    <NDataTable class="no-head" :columns="columns" :data="data" :bordered="false">
     </NDataTable>
 </template>
 

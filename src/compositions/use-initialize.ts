@@ -1,6 +1,5 @@
 import { useDialog } from 'naive-ui';
 import { Ref, ref } from 'vue';
-import { useRouter } from 'vue-router';
 import useWindow from './use-window';
 import { event } from '@tauri-apps/api';
 import { Response } from '@/libs/response';

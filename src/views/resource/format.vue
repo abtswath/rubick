@@ -1,5 +1,5 @@
 <template>
-    <NTabs type="line" animated v-model:value="activated">
+    <NTabs ref="tabRef" type="line" animated v-model:value="activated">
         <template v-for="format in data">
             <NTabPane :name="format.id" :tab="format.format">
                 <Series :data="series" />
@@ -11,18 +11,22 @@
 <script lang="ts" setup>
 import { NTabs, NTabPane } from 'naive-ui';
 import { Format } from '@/compositions/use-resource';
-import { computed, ref, watchEffect } from 'vue';
+import { nextTick, computed, ref, watchEffect } from 'vue';
 import Series from './series.vue';
 
 const props = defineProps<{
     data: Format[]
 }>();
 
-const activated = ref();
+const activated = ref(0);
+const tabRef = ref<typeof NTabs>();
 
 watchEffect(() => {
     if (props.data.length > 0) {
         activated.value = props.data[0].id;
+        nextTick(() => {
+            tabRef.value?.syncBarPosition();
+        });
     }
 });
 
