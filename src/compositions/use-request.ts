@@ -13,7 +13,7 @@ export class RequestError extends Error {
 }
 
 export default () => {
-    const loading = ref(true);
+    const loading = ref(false);
     const message = useMessage();
 
     const request = <T>(url: string, data?: {}): Promise<T> => {
