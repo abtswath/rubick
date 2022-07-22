@@ -34,15 +34,18 @@
                     <NRate readonly :value="(resource?.rating || 0) / 2" allow-half />
                 </p>
                 <p>
-                    <NEllipsis :tooltip="{ contentStyle: { maxWidth: '300px' } }" :line-clamp="1">导演：{{ resource?.directors }}
+                    <NEllipsis :tooltip="{ contentStyle: { maxWidth: '300px' } }" :line-clamp="1">
+                        导演：{{ resource?.directors }}
                     </NEllipsis>
                 </p>
                 <p>
-                    <NEllipsis :tooltip="{ contentStyle: { maxWidth: '300px' } }" :line-clamp="1">编剧：{{ resource?.writers }}
+                    <NEllipsis :tooltip="{ contentStyle: { maxWidth: '300px' } }" :line-clamp="1">
+                        编剧：{{ resource?.writers }}
                     </NEllipsis>
                 </p>
                 <p>
-                    <NEllipsis :tooltip="{ contentStyle: { maxWidth: '300px' } }" :line-clamp="1">演员：{{ resource?.actors }}
+                    <NEllipsis :tooltip="{ contentStyle: { maxWidth: '300px' } }" :line-clamp="1">
+                        演员：{{ resource?.actors }}
                     </NEllipsis>
                 </p>
                 <p class="summary">
@@ -51,28 +54,26 @@
                 </p>
             </div>
         </div>
+        <NDivider />
+        <Season :data="resource?.seasons || []" />
     </NPageHeader>
 </template>
 
 <script lang="ts" setup>
-import { watchEffect } from 'vue';
-import { NPageHeader, NImage, NIcon, NEllipsis, NRate } from 'naive-ui';
-import { MovieCreationOutlined, AccessTimeOutlined, CategoryOutlined } from '@vicons/material';
-import { useRouter } from 'vue-router';
-import translateChannel from '@/libs/translate-channel';
-import useResource from '@/compositions/use-resource';
+import { NPageHeader, NImage, NIcon, NEllipsis, NRate, NDivider } from "naive-ui";
+import { MovieCreationOutlined, AccessTimeOutlined, CategoryOutlined } from "@vicons/material";
+import { useRouter } from "vue-router";
+import translateChannel from "@/libs/translate-channel";
+import useResource from "@/compositions/use-resource";
+import Season from "./season.vue";
 
 const router = useRouter();
 
 const props = defineProps<{
-    id: number
+    id: number;
 }>();
 
-console.log(props);
 const { loading, resource } = useResource(props.id);
-watchEffect(() => {
-    console.log(resource.value)
-});
 </script>
 
 <style lang="scss" scoped>
@@ -109,7 +110,6 @@ watchEffect(() => {
         }
 
         p.rating {
-
             span {
                 margin-right: 8px;
             }

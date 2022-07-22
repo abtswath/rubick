@@ -29,6 +29,7 @@ export interface Format {
 
 export interface Season {
     id: number,
+    resource_id: number,
     season: number,
     name: string,
     formats: Format[],

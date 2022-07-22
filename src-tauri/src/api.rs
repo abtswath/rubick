@@ -163,7 +163,7 @@ fn update_resource(db: &mut Connection, resource_id: i64, subject: Subject) -> R
 fn seasons_for_resource(db: &mut Connection, resource_id: i64) -> Result<Vec<Season>> {
     let mut season_ids = vec![];
     let mut seasons = db
-        .prepare("select * from seasons where resource_id=?1")
+        .prepare("select * from seasons where resource_id=?1 order by season asc")
         .and_then(|mut stmt| {
             let mut rows = stmt.query(params![resource_id])?;
             let mut seasons: Vec<Season> = vec![];
@@ -236,7 +236,7 @@ fn series_for_formats(db: &mut Connection, format_ids: Vec<i64>) -> Result<Vec<S
     }
     let mut series_ids = vec![];
     let mut series = db
-        .prepare("select * from series where format_id in rarray(?)")
+        .prepare("select * from series where format_id in rarray(?) order by episode asc")
         .and_then(|mut stmt| {
             let mut rows = stmt.query(&[&std::rc::Rc::new(
                 format_ids

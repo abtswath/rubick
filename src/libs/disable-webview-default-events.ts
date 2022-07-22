@@ -1,8 +1,10 @@
+const disabledCtrlKeys = ['p', 'f', 'r', 'a'];
+const disabledKeys = ['F3', 'F7'];
+
 const disableDefaultEvents = () => {
-    const disableKeys = ['p', 'f', 'r', 'a'];
 
     const keydownHandler = (e: KeyboardEvent) => {
-        if (e.key === 'F5' || (e.ctrlKey && disableKeys.indexOf(e.key) > -1)) {
+        if (disabledKeys.indexOf(e.key) > -1 || (e.ctrlKey && disabledCtrlKeys.indexOf(e.key) > -1)) {
             e.preventDefault();
         }
     }

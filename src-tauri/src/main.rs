@@ -2,50 +2,38 @@
     all(not(debug_assertions), target_os = "windows"),
     windows_subsystem = "windows"
 )]
-use tauri::{api::dialog, Manager, WindowBuilder, WindowUrl};
+use tauri::{api::dialog, Manager};
 
-use crate::api::{search, resource};
+use crate::{
+    api::{resource, search},
+    window::{create_initialize_window, create_main_window},
+};
 
+mod api;
 mod application;
 mod database;
+mod douban;
 mod initialize;
 mod response;
+mod window;
 mod yyets;
-mod api;
-mod douban;
 
 #[async_std::main]
 async fn main() {
     let context = tauri::generate_context!();
     let app = tauri::Builder::default()
         .setup(move |app| {
+            if app.windows().len() > 0 {
+                if let Some(window) = app.windows().values().next() {
+                    window.set_focus()?;
+                }
+                return Ok(());
+            }
             application::setup(app)?;
             if !application::initialized() {
-                let _ = WindowBuilder::new(app, "initialize", WindowUrl::App("initialize".into()))
-                    .title("Rubick")
-                    .resizable(false)
-                    .decorations(false)
-                    .fullscreen(false)
-                    .maximized(false)
-                    .resizable(false)
-                    .always_on_top(false)
-                    .inner_size(520.0, 360.0)
-                    .skip_taskbar(false)
-                    .visible(false)
-                    .center()
-                    .build()?;
+                let _ = create_initialize_window(app)?;
             } else {
-                let _ = WindowBuilder::new(app, "main", WindowUrl::default())
-                    .title("Rubick")
-                    .resizable(true)
-                    .decorations(false)
-                    .fullscreen(false)
-                    .always_on_top(false)
-                    .inner_size(800.0, 600.0)
-                    .min_inner_size(800.0, 600.0)
-                    .visible(false)
-                    .center()
-                    .build()?;
+                let _ = create_main_window(app)?;
             }
             Ok(())
         })
@@ -54,10 +42,7 @@ async fn main() {
         } else {
             tauri::Menu::default()
         })
-        .invoke_handler(tauri::generate_handler![
-            search,
-            resource
-        ])
+        .invoke_handler(tauri::generate_handler![search, resource])
         .build(context)
         .expect("发生未知错误！");
     app.run(|app_handle, e| match e {
@@ -65,7 +50,7 @@ async fn main() {
             if let Some(_window) = app_handle.get_window("initialize") {
                 initialize::clear();
             }
-        },
+        }
         tauri::RunEvent::Ready => {
             if let Some(window) = app_handle.get_window("initialize") {
                 match database::setup()
@@ -74,7 +59,7 @@ async fn main() {
                         Ok(())
                     })
                     .and_then(|_| {
-                        initialize::initialize(window.clone());
+                        initialize::initialize(window.clone(), app_handle.app_handle());
                         Ok(())
                     }) {
                     Ok(_) => {}

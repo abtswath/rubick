@@ -2,17 +2,18 @@ use anyhow::Result;
 use rusqlite::{params, Transaction};
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fs::remove_file, path::PathBuf, thread};
-use tauri::Window;
+use tauri::{api::dialog, AppHandle, Window};
 
 use crate::{
     database::{self, connect, execute},
     response::Response,
+    window::create_main_window,
     yyets::{self, Item, RecordData, YYeTsSeason},
 };
 
 pub struct NameOnly {
     pub id: i64,
-    pub name: String
+    pub name: String,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -30,7 +31,7 @@ impl<T> ResponseData<T> {
     }
 }
 
-pub fn initialize(window: Window) {
+pub fn initialize(window: Window, app_handle: AppHandle) {
     thread::spawn(move || {
         tauri::async_runtime::block_on(async move {
             let result = yyets::download(window.clone())
@@ -39,11 +40,15 @@ pub fn initialize(window: Window) {
 
             match result {
                 Ok(_) => {
-                    emit_initialize_event(
-                        &window,
-                        Response::ok("完成", ResponseData::new("finish", "")),
-                    )
-                    .ok();
+                    match create_main_window(&app_handle) {
+                        Ok(main_window) => {
+                            let _ = window.close();
+                            let _ = main_window.show();
+                        }
+                        Err(e) => {
+                            dialog::message(Some(&window), "Error", e.to_string());
+                        }
+                    }
                 }
                 Err(e) => {
                     emit_initialize_event(&window, Response::fail(e.to_string().as_str(), "")).ok();
@@ -160,21 +165,21 @@ fn insert_formats(
                     for item in series {
                         if let Ok(size) = trx.execute(
                         "insert into series (format_id, episode, name, size) values (?1, ?2, ?3, ?4)",
-                        params![format_id, item.episode, item.name, item.size],
-                    ) {
-                        if size > 0 {
-                            if let Some(files) = &item.files {
-                                let series_id = trx.last_insert_rowid();
-                                for file in files {
-                                    let way_id = get_id_by_name(trx, "ways", file.way_cn.clone(), ways);
-                                    let _ = trx.execute(
-                                        "insert into files (series_id, way_id, address, password) values (?1, ?2, ?3, ?4)",
-                                        params![series_id, way_id, file.address, file.passwd]
-                                    );
+                            params![format_id, item.episode, item.name, item.size],
+                        ) {
+                            if size > 0 {
+                                if let Some(files) = &item.files {
+                                    let series_id = trx.last_insert_rowid();
+                                    for file in files {
+                                        let way_id = get_id_by_name(trx, "ways", file.way_cn.clone(), ways);
+                                        let _ = trx.execute(
+                                            "insert into files (series_id, way_id, address, password) values (?1, ?2, ?3, ?4)",
+                                            params![series_id, way_id, file.address, file.passwd]
+                                        );
+                                    }
                                 }
                             }
                         }
-                    }
                     }
                 }
             }
