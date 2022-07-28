@@ -4,7 +4,7 @@ use std::path::PathBuf;
 
 use crate::application::{app_dir};
 
-const MIGRATIONS: [&'static str; 15] = [
+const MIGRATIONS: [&'static str; 16] = [
     "CREATE TABLE IF NOT EXISTS areas (
         id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
         name text NOT NULL DEFAULT ''
@@ -57,6 +57,10 @@ const MIGRATIONS: [&'static str; 15] = [
     "CREATE TABLE IF NOT EXISTS ways (
         id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
         name text NOT NULL DEFAULT ''
+    );",
+    "CREATE TABLE IF NOT EXISTS favorites (
+        id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+        resource_id integer NOT NULL DEFAULT 0
     );",
     "CREATE INDEX IF NOT EXISTS series_id ON files (
         series_id ASC

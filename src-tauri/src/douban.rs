@@ -124,12 +124,7 @@ pub async fn get_subject(resource_name: &str) -> Result<Subject> {
         let node = element.as_node();
         if let Ok(img) = node.select_first("#content .article>div .subjectwrap #mainpic>a>img") {
             if let Some(src) = img.attributes.borrow().get("src") {
-                match download_image(&client, src).await {
-                    Ok(pic) => {
-                        subject.pic = pic;
-                    }
-                    Err(_) => {}
-                }
+                subject.pic = src.to_string();
             }
         }
         if let Ok(elements) = node.select(".subject #info>span:nth-child(1)>.attrs>a") {
@@ -175,7 +170,7 @@ pub async fn get_subject(resource_name: &str) -> Result<Subject> {
     Ok(subject)
 }
 
-async fn download_image(client: &Client, src: &str) -> Result<String> {
+pub async fn download_image(src: &str) -> Result<String> {
     let mut hasher = DefaultHasher::new();
     hasher.write(src.as_bytes());
     let mut filename = hasher.finish().to_string();
@@ -183,7 +178,8 @@ async fn download_image(client: &Client, src: &str) -> Result<String> {
 
     let path = image_dir().join(&filename);
 
-    let response = get(client, src).await?;
+    let client = Client::builder().build()?;
+    let response = get(&client, src).await?;
     let mut stream = response.bytes_stream();
     let mut file = File::create(path)?;
 

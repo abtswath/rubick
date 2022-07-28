@@ -5,7 +5,7 @@ use tauri::command;
 
 use crate::{
     database::execute,
-    douban::{get_subject, Subject},
+    douban::{download_image, get_subject},
     response::Response,
 };
 
@@ -70,6 +70,7 @@ pub struct Resource {
     pub seasons: Vec<Season>,
     pub channel: String,
     pub area: String,
+    pub favorite: bool,
 }
 
 #[command]
@@ -95,7 +96,7 @@ pub fn search(keyword: String) -> Response<Vec<SearchResult>> {
 }
 
 #[command]
-pub fn resource(id: i64) -> Response<Option<Resource>> {
+pub async fn resource(id: i64) -> Response<Option<Resource>> {
     if id < 1 {
         return Response::fail("resource is not exists.", None);
     }
@@ -116,15 +117,23 @@ pub fn resource(id: i64) -> Response<Option<Resource>> {
                 rating: row.get("rating")?,
                 channel: row.get("channel")?,
                 area: row.get("area")?,
+                favorite: false,
                 seasons: vec![],
             })
         })?;
+        resource.favorite = is_favorite(db, id);
 
+        resource.seasons = seasons_for_resource(db, id)?;
+        Ok(resource)
+    });
+    if let Ok(mut resource) = result {
         if resource.pic.eq("") {
-            let result =
-                tauri::async_runtime::block_on(async { get_subject(resource.name.as_str()).await });
+            let result = get_subject(resource.name.as_str()).await;
             if let Ok(subject) = result {
-                resource.pic = subject.pic.to_string();
+                if let Ok(pic) = download_image(subject.pic.as_str()).await {
+                    resource.pic = pic;
+                }
+
                 resource.directors = subject.directors.to_string();
                 resource.writers = subject.writers.to_string();
                 resource.actors = subject.actors.to_string();
@@ -132,30 +141,25 @@ pub fn resource(id: i64) -> Response<Option<Resource>> {
                 resource.released_at = subject.released_at.to_string();
                 resource.summary = subject.summary.to_string();
                 resource.rating = subject.rating;
-                let _ = update_resource(db, resource.id, subject);
+                let _ = execute(|db| update_resource(db, &resource));
             }
         }
-
-        resource.seasons = seasons_for_resource(db, id)?;
-        Ok(resource)
-    });
-    match result {
-        Ok(resource) => Response::ok("success", Some(resource)),
-        Err(_) => Response::fail("resource is not exists.", None),
+        return Response::ok("success", Some(resource));
     }
+    Response::fail("resource is not exists.", None)
 }
 
-fn update_resource(db: &mut Connection, resource_id: i64, subject: Subject) -> Result<usize> {
+fn update_resource(db: &mut Connection, resource: &Resource) -> Result<usize> {
     let size = db.execute("update resources set pic=?1, directors=?2, writers=?3, actors=?4, types=?5, released_at=?6, summary=?7, rating=?8 where id=?9", params![
-        subject.pic,
-        subject.directors,
-        subject.writers,
-        subject.actors,
-        subject.types,
-        subject.released_at,
-        subject.summary,
-        subject.rating,
-        resource_id
+        resource.pic,
+        resource.directors,
+        resource.writers,
+        resource.actors,
+        resource.types,
+        resource.released_at,
+        resource.summary,
+        resource.rating,
+        resource.id
     ])?;
     Ok(size)
 }
@@ -298,4 +302,76 @@ fn files_for_series(db: &Connection, series_ids: Vec<i64>) -> Result<Vec<SeriesF
             Ok(files)
         })?;
     Ok(files)
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Favorite {
+    pub id: i64,
+    pub name: String,
+    pub original_name: String,
+    pub alias_name: String,
+    pub pic: String,
+}
+
+#[command]
+pub fn favorites() -> Response<Vec<Favorite>> {
+    let result = execute(|db| {
+        let mut stmt = db.prepare("select r.id, r.name, r.original_name, r.alias_name, r.pic from favorites as f left join resources as r on f.resource_id=r.id")?;
+        let mut rows = stmt.query([])?;
+        let mut resources = vec![];
+        while let Some(row) = rows.next()? {
+            resources.push(Favorite {
+                id: row.get("id")?,
+                name: row.get("name")?,
+                original_name: row.get("original_name")?,
+                alias_name: row.get("alias_name")?,
+                pic: row.get("pic")?,
+            });
+        }
+        Ok(resources)
+    });
+    match result {
+        Ok(resources) => Response::ok("success", resources),
+        Err(e) => Response::fail(e.to_string().as_str(), Vec::new()),
+    }
+}
+
+fn is_favorite(db: &mut Connection, resource_id: i64) -> bool {
+    if let Ok(size) = db.query_row(
+        "select count(*) from favorites where resource_id=?1",
+        [resource_id],
+        |row| Ok(row.get::<usize, usize>(0)?),
+    ) {
+        return size > 0;
+    }
+    return false;
+}
+
+#[command]
+pub fn favorite(resource_id: i64) -> Response<()> {
+    let result = execute(|db| {
+        if !(is_favorite(db, resource_id)) {
+            db.execute(
+                "insert into favorites (resource_id) values (?1)",
+                [resource_id],
+            )?;
+        }
+        Ok(())
+    });
+    match result {
+        Ok(()) => Response::ok("success", ()),
+        Err(e) => Response::fail(e.to_string().as_str(), ()),
+    }
+}
+
+#[command]
+pub fn un_favorite(resource_id: i64) -> Response<()> {
+    let result = execute(|db| {
+        db.execute("delete from favorites where resource_id=?1", [resource_id])?;
+        Ok(())
+    });
+    match result {
+        Ok(()) => Response::ok("success", ()),
+        Err(e) => Response::fail(e.to_string().as_str(), ()),
+    }
 }

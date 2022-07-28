@@ -1,7 +1,6 @@
+import convertSrc from '@/libs/convert-src';
 import { ref } from 'vue';
 import useRequest from './use-request';
-import { appDir, join } from '@tauri-apps/api/path';
-import { convertFileSrc } from '@tauri-apps/api/tauri';
 
 export interface SeriesFile {
     id: number,
@@ -51,6 +50,7 @@ export interface Resource {
     seasons: Season[],
     channel: string,
     area: string,
+    favorite?: boolean
 }
 
 export default (id: number) => {
@@ -59,9 +59,7 @@ export default (id: number) => {
 
     request<Resource>('resource', { id })
         .then(async response => {
-            const dir = await appDir();
-            const path = await join(dir, 'images', response.pic);
-            response.pic = convertFileSrc(path);
+            response.pic = await convertSrc(response.pic);
             return response;
         })
         .then(response => {

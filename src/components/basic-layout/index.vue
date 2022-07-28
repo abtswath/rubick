@@ -3,7 +3,7 @@
         <Sider />
         <NLayoutContent :content-style="{ padding: '8px' }" :native-scrollbar="false">
             <RouterView v-slot="{ Component }">
-                <KeepAlive :include="keepAlivePages">
+                <KeepAlive :include="keepalivePages">
                     <component :is="Component" />
                 </KeepAlive>
             </RouterView>
@@ -14,9 +14,9 @@
 <script lang="ts" setup>
 import { NLayout, NLayoutContent } from 'naive-ui';
 import Sider from './sider.vue';
-import { ref } from 'vue';
+import useKeepalive from '@/compositions/use-keepalive';
 
-const keepAlivePages = ref(['search']);
+const keepalivePages = useKeepalive();
 </script>
 
 <style lang="scss" scoped>

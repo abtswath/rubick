@@ -1,10 +1,14 @@
-const disabledCtrlKeys = ['p', 'f', 'r', 'a'];
+const disabledCtrlKeys = ['p', 'f', 'r'];
 const disabledKeys = ['F3', 'F7'];
 
 const disableDefaultEvents = () => {
 
     const keydownHandler = (e: KeyboardEvent) => {
         if (disabledKeys.indexOf(e.key) > -1 || (e.ctrlKey && disabledCtrlKeys.indexOf(e.key) > -1)) {
+            e.preventDefault();
+        }
+        const tagName = (e.currentTarget as HTMLElement).tagName?.toLowerCase();
+        if (e.ctrlKey && e.key === 'a' && ['input', 'textarea'].indexOf(tagName) < 0) {
             e.preventDefault();
         }
     }

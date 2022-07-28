@@ -1,4 +1,4 @@
-import { SearchOutlined, SettingsOutlined, TagOutlined } from '@vicons/material';
+import { SearchOutlined, SettingsOutlined, FavoriteBorderOutlined } from '@vicons/material';
 import { MenuOption } from 'naive-ui';
 import { h, ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -11,17 +11,17 @@ export default () => {
             label: '搜索'
         },
         {
-            icon: () => h(TagOutlined),
-            key: 'tag',
-            label: '标签'
+            icon: () => h(FavoriteBorderOutlined),
+            key: 'favorite',
+            label: '收藏'
         }
     ];
     const bottomOptions: MenuOption[] = [
-        {
-            icon: () => h(SettingsOutlined),
-            key: 'setting',
-            label: '设置'
-        }
+        // {
+        //     icon: () => h(SettingsOutlined),
+        //     key: 'setting',
+        //     label: '设置'
+        // }
     ];
 
     const active = ref(options[0].key);

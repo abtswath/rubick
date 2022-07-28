@@ -5,7 +5,7 @@ import Search from '@/views/search/search.vue';
 import Resource from '@/views/resource/index.vue';
 import Initialize from '@/views/initialize/index.vue';
 import Setting from '@/views/setting/index.vue';
-import Tag from '@/views/tag/index.vue';
+import Favorite from '@/views/favorite/favorite.vue';
 
 export default [
     {
@@ -51,9 +51,9 @@ export default [
                         component: Setting
                     },
                     {
-                        path: 'tag',
-                        name: 'tag',
-                        component: Tag
+                        path: 'favorite',
+                        name: 'favorite',
+                        component: Favorite
                     }
                 ]
             }

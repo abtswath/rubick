@@ -5,7 +5,7 @@
 use tauri::{api::dialog, Manager};
 
 use crate::{
-    api::{resource, search},
+    api::{resource, search, favorite, un_favorite, favorites},
     window::{create_initialize_window, create_main_window},
 };
 
@@ -30,6 +30,7 @@ async fn main() {
                 return Ok(());
             }
             application::setup(app)?;
+            database::setup()?;
             if !application::initialized() {
                 let _ = create_initialize_window(app)?;
             } else {
@@ -42,7 +43,13 @@ async fn main() {
         } else {
             tauri::Menu::default()
         })
-        .invoke_handler(tauri::generate_handler![search, resource])
+        .invoke_handler(tauri::generate_handler![
+            search,
+            resource,
+            favorites,
+            favorite,
+            un_favorite
+        ])
         .build(context)
         .expect("发生未知错误！");
     app.run(|app_handle, e| match e {
@@ -53,11 +60,7 @@ async fn main() {
         }
         tauri::RunEvent::Ready => {
             if let Some(window) = app_handle.get_window("initialize") {
-                match database::setup()
-                    .and_then(|_| {
-                        window.show()?;
-                        Ok(())
-                    })
+                match window.show()
                     .and_then(|_| {
                         initialize::initialize(window.clone(), app_handle.app_handle());
                         Ok(())

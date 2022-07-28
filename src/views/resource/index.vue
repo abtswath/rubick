@@ -38,8 +38,28 @@
             </div>
         </div>
         <div class="info">
-            <NSkeleton text :width="160" :height="237" v-if="loading" />
-            <NImage v-else :width="160" preview-disabled :src="resource?.pic" />
+            <div>
+                <NSkeleton text :width="160" :height="237" v-if="loading" />
+                <NImage v-else :width="160" preview-disabled :src="resource?.pic" />
+                <div class="info-action">
+                    <NButton @click="unFavorite" v-if="resource?.favorite" type="primary" style="width: 100%;">
+                        <template #icon>
+                            <NIcon>
+                                <FavoriteOutlined />
+                            </NIcon>
+                        </template>
+                        取消收藏
+                    </NButton>
+                    <NButton @click="favorite" v-else type="primary" style="width: 100%;">
+                        <template #icon>
+                            <NIcon>
+                                <FavoriteBorderOutlined />
+                            </NIcon>
+                        </template>
+                        收藏
+                    </NButton>
+                </div>
+            </div>
             <div class="info-items">
                 <p class="rating">
                     <span>豆瓣评分：{{ resource?.rating }}</span>
@@ -79,12 +99,13 @@
 </template>
 
 <script lang="ts" setup>
-import { NPageHeader, NSkeleton, NImage, NIcon, NEllipsis, NRate, NDivider } from "naive-ui";
-import { MovieCreationOutlined, AccessTimeOutlined, CategoryOutlined } from "@vicons/material";
+import { NButton, NPageHeader, NSkeleton, NImage, NIcon, NEllipsis, NRate, NDivider } from "naive-ui";
+import { MovieCreationOutlined, AccessTimeOutlined, CategoryOutlined, FavoriteBorderOutlined, FavoriteOutlined } from "@vicons/material";
 import { useRouter } from "vue-router";
 import translateChannel from "@/libs/translate-channel";
 import useResource from "@/compositions/use-resource";
 import Season from "./season.vue";
+import useFavorite from '@/compositions/use-favorite';
 
 const router = useRouter();
 
@@ -93,6 +114,7 @@ const props = defineProps<{
 }>();
 
 const { loading, resource } = useResource(props.id);
+const { favorite, unFavorite } = useFavorite(resource);
 </script>
 
 <style lang="scss" scoped>
@@ -118,6 +140,10 @@ const { loading, resource } = useResource(props.id);
     display: flex;
     align-items: flex-start;
     justify-content: flex-start;
+
+    &-action {
+        width: 160px;
+    }
 
     &-items {
         width: calc(100% - 160px);
