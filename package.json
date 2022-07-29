@@ -12,7 +12,8 @@
     "@tauri-apps/api": "^1.0.1",
     "normalize.css": "^8.0.1",
     "vue": "^3.2.25",
-    "vue-router": "^4.0.16"
+    "vue-router": "^4.0.16",
+    "vuex": "^4.0.2"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1.0.2",

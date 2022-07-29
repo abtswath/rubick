@@ -1,5 +1,5 @@
+import { useStore } from '@/store';
 import { ref } from 'vue';
-import useHistory from './use-history';
 import useRequest from './use-request';
 
 export interface SearchResult {
@@ -11,12 +11,12 @@ export interface SearchResult {
 }
 
 export default () => {
-    const { put } = useHistory();
+    const store = useStore();
     const { loading, request } = useRequest();
     const resources = ref<SearchResult[]>([]);
 
     const search = async (keyword: string) => {
-        put(keyword);
+        store.dispatch('searchHistory/put', keyword);
         await request<SearchResult[]>('search', { keyword: keyword })
             .then((response) => {
                 resources.value = response;

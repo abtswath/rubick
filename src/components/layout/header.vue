@@ -6,8 +6,7 @@
                     <Minimize />
                 </NIcon>
             </div>
-            <div class="action-button" :disabled="!allowMaximized" role="button"
-                @click="toggleMaximize">
+            <div class="action-button" :disabled="!allowMaximize" role="button" @click="toggleMaximize">
                 <NIcon size="16">
                     <Restore v-if="isMaximized" />
                     <Maximize v-else />
@@ -25,9 +24,16 @@
 <script lang="ts" setup>
 import { NLayoutHeader, NIcon } from 'naive-ui';
 import { Close, Minimize, Maximize, Restore } from '@/components/icon';
-import useWindow from '@/compositions/use-window';
+import { computed } from 'vue';
+import { useStore } from '@/store';
 
-const { isMaximized, allowMaximized, minimize, toggleMaximize, close } = useWindow();
+const store = useStore();
+
+const isMaximized = computed(() => store.state.window.isMaximized);
+const allowMaximize = computed(() => store.state.window.allowMaximize);
+const minimize = () => store.dispatch('window/minimize');
+const toggleMaximize = () => store.dispatch('window/toggleMaximize');
+const close = () => store.dispatch('window/close');
 
 </script>
 

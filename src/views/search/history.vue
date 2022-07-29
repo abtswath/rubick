@@ -24,9 +24,12 @@
 <script lang="ts" setup>
 import { NThing, NIcon, NButton, NSpace, NTag } from 'naive-ui';
 import { DeleteForeverOutlined } from '@vicons/material';
-import useHistory from '@/compositions/use-history';
+import { useStore } from '@/store';
+import { computed } from 'vue';
 
-const { histories, clear } = useHistory();
+const store = useStore();
+const histories = computed(() => store.state.searchHistory.histories);
+const clear = () => store.dispatch('searchHistory/clear');
 
 const emit = defineEmits<{
     (e: 'select', item: string): void

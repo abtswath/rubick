@@ -6,9 +6,10 @@ const disableDefaultEvents = () => {
     const keydownHandler = (e: KeyboardEvent) => {
         if (disabledKeys.indexOf(e.key) > -1 || (e.ctrlKey && disabledCtrlKeys.indexOf(e.key) > -1)) {
             e.preventDefault();
+            return;
         }
-        const tagName = (e.currentTarget as HTMLElement).tagName?.toLowerCase();
-        if (e.ctrlKey && e.key === 'a' && ['input', 'textarea'].indexOf(tagName) < 0) {
+        const tagName = (e.target as HTMLElement).tagName?.toLowerCase();
+        if (['input', 'textarea'].indexOf(tagName) < 0 && e.ctrlKey && e.key.toLowerCase() === 'a') {
             e.preventDefault();
         }
     }

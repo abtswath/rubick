@@ -1,8 +1,8 @@
 import { useDialog } from 'naive-ui';
 import { Ref, ref } from 'vue';
-import useWindow from './use-window';
 import { event } from '@tauri-apps/api';
 import { Response } from '@/libs/response';
+import { useStore } from '@/store';
 
 type Step = 'downloading' | 'importing' | 'finish';
 
@@ -16,7 +16,7 @@ export default (): [Ref<number>, Ref<number>, Ref<string>, Ref<Step>] => {
     const importPercentage = ref(0);
     const message = ref('');
     const dialog = useDialog();
-    const { close } = useWindow();
+    const store = useStore();
     const step = ref<Step>('downloading');
 
     event.listen<Response<ResponseData>>('rubick_initialize', (event) => {
@@ -29,7 +29,7 @@ export default (): [Ref<number>, Ref<number>, Ref<string>, Ref<Step>] => {
                 closeOnEsc: false,
                 showIcon: false,
                 onPositiveClick: () => {
-                    close();
+                    store.dispatch('window/close');
                 }
             });
             return;

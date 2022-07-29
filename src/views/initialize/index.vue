@@ -10,6 +10,10 @@
 <script lang="ts" setup>
 import { NP, NProgress } from 'naive-ui';
 import useInitialize from '@/compositions/use-initialize';
+import { useStore } from '@/store';
+
+const store = useStore();
+store.dispatch('window/disableMaximize');
 
 const [percentage, importPercentage, message, step] = useInitialize();
 
