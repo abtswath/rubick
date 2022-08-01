@@ -74,7 +74,7 @@ pub struct Resource {
 }
 
 #[command]
-pub fn search(keyword: String) -> Response<Vec<SearchResult>> {
+pub async fn search(keyword: String) -> Response<Vec<SearchResult>> {
     match execute(|db| {
         let mut stmt = db.prepare("select r.id, r.name, r.original_name, r.alias_name, c.name as channel from resources as r left join channels as c on c.id=r.channel_id where r.name like ?1 or r.alias_name like ?1 or r.original_name like ?1 order by r.released_at desc, r.id desc")?;
         let mut rows = stmt.query(params![format!("%{}%", keyword)])?;
@@ -314,7 +314,7 @@ pub struct Favorite {
 }
 
 #[command]
-pub fn favorites() -> Response<Vec<Favorite>> {
+pub async fn favorites() -> Response<Vec<Favorite>> {
     let result = execute(|db| {
         let mut stmt = db.prepare("select r.id, r.name, r.original_name, r.alias_name, r.pic from favorites as f left join resources as r on f.resource_id=r.id")?;
         let mut rows = stmt.query([])?;
@@ -348,7 +348,7 @@ fn is_favorite(db: &mut Connection, resource_id: i64) -> bool {
 }
 
 #[command]
-pub fn favorite(resource_id: i64) -> Response<()> {
+pub async fn favorite(resource_id: i64) -> Response<()> {
     let result = execute(|db| {
         if !(is_favorite(db, resource_id)) {
             db.execute(
@@ -365,7 +365,7 @@ pub fn favorite(resource_id: i64) -> Response<()> {
 }
 
 #[command]
-pub fn un_favorite(resource_id: i64) -> Response<()> {
+pub async fn un_favorite(resource_id: i64) -> Response<()> {
     let result = execute(|db| {
         db.execute("delete from favorites where resource_id=?1", [resource_id])?;
         Ok(())
